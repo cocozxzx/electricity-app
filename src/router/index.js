@@ -26,6 +26,11 @@ const routes = [
     component: ReplaceDevice,
   },
   {
+    path: '/bind',
+    name: 'Bind',
+    component: Bind,
+  },
+  {
     path: '/',
     component: MainLayout,
     children: [
@@ -42,11 +47,6 @@ const routes = [
         path: 'operation',
         name: 'Operation',
         component: Operation,
-      },
-      {
-        path: 'bind',
-        name: 'Bind',
-        component: Bind,
       },
       {
         path: 'energy',

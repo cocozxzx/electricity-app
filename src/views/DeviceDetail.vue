@@ -123,7 +123,7 @@
           />
         </div>
         <div class="delete-actions-group">
-          <van-button class="cancel-btn" @click="securityDialog.show = false" round>再想想</van-button>
+          <van-button class="cancel-btn" @click="securityDialog.show = false" round>取消</van-button>
           <van-button class="confirm-btn" type="primary" @click="handleCommand" round>确认操作</van-button>
         </div>
       </div>

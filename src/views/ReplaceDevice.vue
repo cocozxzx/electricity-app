@@ -1,7 +1,7 @@
 <template>
   <div class="replace-device-page">
     <van-nav-bar
-      title="更换新设备"
+      title="更换设备"
       left-arrow
       @click-left="onClickLeft"
       fixed
@@ -27,7 +27,7 @@
                 <template #icon><van-icon name="cluster-o" /></template>
                 子设备
               </van-tag>
-              <van-icon name="delete-o" color="#ee0a24" class="delete-icon" @click="hasScanned = false" />
+              <van-icon name="delete-o" color="#ee0a24" class="delete-icon" @click="confirmDelete" />
             </div>
 
             <div class="device-main-info">
@@ -131,7 +131,7 @@
 <script setup>
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { showToast, showLoadingToast, closeToast, showSuccessToast } from 'vant';
+import { showToast, showLoadingToast, closeToast, showSuccessToast, showConfirmDialog } from 'vant';
 
 const router = useRouter();
 const hasScanned = ref(false);
@@ -141,6 +141,20 @@ const deviceInfo = reactive({
 });
 
 const onClickLeft = () => router.back();
+
+const confirmDelete = () => {
+  showConfirmDialog({
+    title: '确认删除',
+    message: '确认要删除当前识别的新设备吗？',
+  })
+    .then(() => {
+      hasScanned.value = false;
+      showToast('删除成功');
+    })
+    .catch(() => {
+      // on cancel
+    });
+};
 
 const onScan = () => {
   if (hasScanned.value) {

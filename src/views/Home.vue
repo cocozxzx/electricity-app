@@ -133,8 +133,8 @@
           />
         </div>
         <div class="delete-actions-group">
-          <van-button class="cancel-btn" @click="addressDialog.show = false" round>再想想</van-button>
-          <van-button class="confirm-btn" type="primary" @click="confirmAddress" round>确认修改</van-button>
+          <van-button class="cancel-btn" @click="addressDialog.show = false" round>取消</van-button>
+          <van-button class="confirm-btn" type="primary" @click="confirmAddress" round>确认</van-button>
         </div>
       </div>
     </van-dialog>
@@ -162,8 +162,8 @@
         <h3 class="delete-title">确认删除设备?</h3>
         <!-- <p class="ios-dialog-desc">删除后该设备的历史数据将无法查看，此操作不可撤销。</p> -->
         <div class="delete-actions-group">
-          <van-button class="cancel-btn" @click="deleteDialog.show = false" round>再想想</van-button>
-          <van-button class="confirm-btn" type="danger" @click="confirmDelete" round>确认删除</van-button>
+          <van-button class="cancel-btn" @click="deleteDialog.show = false" round>取消</van-button>
+          <van-button class="confirm-btn" type="danger" @click="confirmDelete" round>删除</van-button>
         </div>
       </div>
     </van-dialog>
