@@ -42,8 +42,6 @@
           </div>
         </van-form>
       </div>
-
-      
     </div>
   </div>
 </template>
@@ -89,7 +87,6 @@ const onSubmit = (values) => {
   justify-content: center;
 }
 
-/* 装饰性背景 */
 .login-background {
   position: absolute;
   top: 0;
@@ -117,7 +114,7 @@ const onSubmit = (values) => {
   width: 250px;
   height: 250px;
   background: rgba(0, 210, 255, 0.15);
-  bottom: -50px;
+  top: 300px;
   left: -50px;
 }
 
@@ -158,12 +155,6 @@ const onSubmit = (values) => {
   letter-spacing: 1px;
 }
 
-.subtitle {
-  font-size: 14px;
-  color: #969799;
-  margin-top: 8px;
-}
-
 .login-card {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
@@ -198,17 +189,6 @@ const onSubmit = (values) => {
   box-shadow: 0 8px 20px rgba(25, 137, 250, 0.3);
 }
 
-.login-footer {
-  margin-top: 40px;
-  text-align: center;
-}
-
-.login-footer p {
-  font-size: 13px;
-  color: #969799;
-}
-
-/* 覆盖 Vant 默认样式 */
 :deep(.van-field__left-icon) {
   margin-right: 12px;
   color: #1989fa;

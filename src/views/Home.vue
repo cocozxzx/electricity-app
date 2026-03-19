@@ -7,35 +7,12 @@
     </div>
 
     <div class="content-wrapper">
-      <!-- 顶部区域 -->
-      <div class="header-section">
-        <div class="top-bar">
-          <h1 class="agent-name">测试代理</h1>
-          
-          <van-popover v-model:show="showProjectPopover" :actions="projects" @select="onSelectProject" placement="bottom">
-            <template #reference>
-              <div class="project-selector">
-                <span>{{ currentProject.text }}</span>
-                <van-icon name="arrow-down" />
-              </div>
-            </template>
-          </van-popover>
-
-          <div class="notice-icon">
-            <van-icon name="bell" size="24" />
-            <div class="badge">3</div>
-          </div>
-        </div>
-        <div class="user-info">
-          <p class="address">浙江杭州市余杭区xxxx</p>
-          <p class="user-detail">admin 18888888888</p>
-        </div>
-      </div>
+      <PageHeader />
 
       <!-- 状态卡片 -->
       <div class="status-card-container">
         <div class="status-card glass-card">
-          <div class="status-item active">
+          <div class="status-item">
             <span class="count blue">{{ allDevices.length }}</span>
             <span class="label">全部</span>
           </div>
@@ -56,7 +33,7 @@
 
       <!-- 选项卡 -->
       <div class="tab-section">
-        <div class="custom-tabs">
+        <div class="custom-tabs glass-card no-blur">
           <div class="tab-item" :class="{ active: activeTab === 0 }" @click="activeTab = 0">全部设备</div>
           <div class="tab-item" :class="{ active: activeTab === 1 }" @click="activeTab = 1">我关注的</div>
         </div>
@@ -108,7 +85,7 @@
           </div>
 
           <div class="device-main-btn">
-            <van-button block round plain type="primary" class="main-btn">
+            <van-button block round plain type="primary" class="main-btn" @click="goToDetail(device)">
               <template #icon>
                 <van-icon name="apps-o" />
               </template>
@@ -117,19 +94,19 @@
           </div>
 
           <div class="device-actions">
-            <div class="action-item blue">
+            <div class="action-item blue" @click="showModifyAddress(device)">
               <van-icon name="location-o" />
               <span>修改地址</span>
             </div>
-            <div class="action-item green">
+            <div class="action-item green" @click="showNavigation">
               <van-icon name="guide-o" />
               <span>导航</span>
             </div>
-            <div class="action-item orange">
+            <div class="action-item orange" @click="goToReplace(device)">
               <van-icon name="replay" />
               <span>更换设备</span>
             </div>
-            <div class="action-item red">
+            <div class="action-item red" @click="showDeleteConfirm(device)">
               <van-icon name="delete-o" />
               <span>删除设备</span>
             </div>
@@ -137,24 +114,69 @@
         </div>
       </div>
     </div>
+
+    <!-- 修改地址弹窗 -->
+    <van-dialog
+      v-model:show="addressDialog.show"
+      :show-confirm-button="false"
+      class-name="glass-dialog"
+    >
+      <div class="delete-dialog-content">
+        <h3 class="delete-title">修改设备地址</h3>
+        <div class="dialog-content-inner">
+          <van-field
+            v-model="addressDialog.value"
+            type="textarea"
+            rows="3"
+            placeholder="请输入详细安装地址"
+            class="dialog-input"
+          />
+        </div>
+        <div class="delete-actions-group">
+          <van-button class="cancel-btn" @click="addressDialog.show = false" round>再想想</van-button>
+          <van-button class="confirm-btn" type="primary" @click="confirmAddress" round>确认修改</van-button>
+        </div>
+      </div>
+    </van-dialog>
+
+    <!-- 导航软件选择 -->
+    <van-action-sheet
+      v-model:show="showNavSheet"
+      :actions="navActions"
+      cancel-text="取消"
+      close-on-click-action
+      @select="onNavSelect"
+      class-name="glass-sheet"
+    />
+
+    <!-- 删除确认弹窗 -->
+    <van-dialog
+      v-model:show="deleteDialog.show"
+      :show-confirm-button="false"
+      class-name="glass-dialog"
+    >
+      <div class="delete-dialog-content">
+        <div class="warning-icon">
+          <van-icon name="warning" color="#ee0a24" size="64" />
+        </div>
+        <h3 class="delete-title">确认删除设备?</h3>
+        <!-- <p class="ios-dialog-desc">删除后该设备的历史数据将无法查看，此操作不可撤销。</p> -->
+        <div class="delete-actions-group">
+          <van-button class="cancel-btn" @click="deleteDialog.show = false" round>再想想</van-button>
+          <van-button class="confirm-btn" type="danger" @click="confirmDelete" round>确认删除</van-button>
+        </div>
+      </div>
+    </van-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
+import { useRouter } from 'vue-router';
+import { showToast, showSuccessToast } from 'vant';
+import PageHeader from '@/components/PageHeader.vue';
 
-// 演示项目下拉选择
-const showProjectPopover = ref(false);
-const projects = [
-  { text: '演示项目A', value: 'A' },
-  { text: '演示项目B', value: 'B' },
-  { text: '演示项目C', value: 'C' },
-];
-const currentProject = ref(projects[0]);
-
-const onSelectProject = (action) => {
-  currentProject.value = action;
-};
+const router = useRouter();
 
 // 搜索与Tab
 const searchText = ref('');
@@ -173,13 +195,9 @@ const toggleFollow = (device) => {
 
 const filteredDevices = computed(() => {
   let list = allDevices.value;
-  
-  // Tab 过滤
   if (activeTab.value === 1) {
     list = list.filter(d => d.isFollowed);
   }
-  
-  // 搜索过滤
   if (searchText.value) {
     const keyword = searchText.value.toLowerCase();
     list = list.filter(d => 
@@ -187,9 +205,73 @@ const filteredDevices = computed(() => {
       d.id.includes(keyword)
     );
   }
-  
   return list;
 });
+
+// --- 交互逻辑 ---
+
+// 1. 修改地址
+const addressDialog = reactive({
+  show: false,
+  value: '',
+  device: null
+});
+const showModifyAddress = (device) => {
+  addressDialog.device = device;
+  addressDialog.value = device.address;
+  addressDialog.show = true;
+};
+const confirmAddress = () => {
+  if (!addressDialog.value.trim()) {
+    showToast('请输入详细安装地址');
+    return;
+  }
+  if (addressDialog.device) {
+    addressDialog.device.address = addressDialog.value;
+    addressDialog.show = false;
+    showSuccessToast('修改成功');
+  }
+};
+
+// 2. 导航
+const showNavSheet = ref(false);
+const navActions = [
+  { name: '高德地图' },
+  { name: '百度地图' },
+  { name: '腾讯地图' },
+  { name: '苹果地图' }
+];
+const showNavigation = () => {
+  showNavSheet.value = true;
+};
+const onNavSelect = (item) => {
+  showToast(`正在跳转至 ${item.name}`);
+};
+
+// 3. 更换设备
+const goToReplace = (device) => {
+  router.push({ name: 'ReplaceDevice' });
+};
+
+// 4. 删除设备
+const deleteDialog = reactive({
+  show: false,
+  device: null
+});
+const showDeleteConfirm = (device) => {
+  deleteDialog.device = device;
+  deleteDialog.show = true;
+};
+const confirmDelete = () => {
+  allDevices.value = allDevices.value.filter(d => d.id !== deleteDialog.device.id);
+  deleteDialog.show = false;
+  showSuccessToast('删除成功');
+};
+
+// 5. 设备主页
+const goToDetail = (device) => {
+  router.push({ name: 'DeviceDetail' });
+};
 </script>
 
 <style scoped>
@@ -200,7 +282,6 @@ const filteredDevices = computed(() => {
   overflow: hidden;
 }
 
-/* 装饰性背景 */
 .home-background {
   position: fixed;
   top: 0;
@@ -239,7 +320,6 @@ const filteredDevices = computed(() => {
   padding-bottom: 20px;
 }
 
-/* 毛玻璃通用类 */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
@@ -247,7 +327,10 @@ const filteredDevices = computed(() => {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
 }
 
-/* 顶部蓝色背景 */
+.no-blur {
+  backdrop-filter: none;
+}
+
 .header-section {
   background: linear-gradient(135deg, rgba(45, 114, 241, 0.95) 0%, rgba(62, 129, 245, 0.85) 100%);
   backdrop-filter: blur(10px);
@@ -311,19 +394,6 @@ const filteredDevices = computed(() => {
   border: 1px solid white;
 }
 
-.user-info .address {
-  font-size: 14px;
-  opacity: 0.9;
-  margin: 0 0 8px;
-}
-
-.user-info .user-detail {
-  font-size: 14px;
-  opacity: 0.8;
-  margin: 0;
-}
-
-/* 状态卡片 */
 .status-card-container {
   margin-top: -40px;
   padding: 0 16px;
@@ -360,7 +430,6 @@ const filteredDevices = computed(() => {
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 6px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .status-item .label {
@@ -368,14 +437,12 @@ const filteredDevices = computed(() => {
   color: #646566;
 }
 
-/* 选项卡 */
 .tab-section {
   padding: 24px 16px 0;
 }
 
 .custom-tabs {
   background: rgba(235, 237, 240, 0.6);
-  backdrop-filter: blur(5px);
   border-radius: 24px;
   display: flex;
   padding: 4px;
@@ -399,13 +466,8 @@ const filteredDevices = computed(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* 搜索栏 */
 .search-section {
   padding: 16px;
-}
-
-.custom-search {
-  padding: 0;
 }
 
 :deep(.van-search__content) {
@@ -414,22 +476,13 @@ const filteredDevices = computed(() => {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.6);
   padding: 6px 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
-/* 设备列表 */
 .device-list {
   padding: 0 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 0;
-  color: #969799;
-  font-size: 14px;
 }
 
 .device-card {
@@ -456,8 +509,8 @@ const filteredDevices = computed(() => {
   border-radius: 50%;
   margin-right: 10px;
 }
-.dot.red { background-color: #ee0a24; box-shadow: 0 0 8px rgba(238, 10, 36, 0.4); }
-.dot.green { background-color: #07c160; box-shadow: 0 0 8px rgba(7, 193, 96, 0.4); }
+.dot.red { background-color: #ee0a24; }
+.dot.green { background-color: #07c160; }
 .dot.gray { background-color: #c8c9cc; }
 
 .device-title h3 {
@@ -465,14 +518,6 @@ const filteredDevices = computed(() => {
   margin: 0;
   color: #1a1a1a;
   font-weight: 600;
-}
-
-.star-icon {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.star-icon:active {
-  transform: scale(1.2);
 }
 
 .device-info-grid {
@@ -505,7 +550,6 @@ const filteredDevices = computed(() => {
 .info-value.red { color: #ee0a24; font-weight: 600; }
 .info-value.green { color: #07c160; font-weight: 600; }
 .info-value.gray { color: #969799; font-weight: 600; }
-.info-value.bold { font-weight: bold; font-family: monospace; font-size: 15px; }
 
 .device-main-btn {
   padding: 0 16px 16px;
@@ -549,4 +593,83 @@ const filteredDevices = computed(() => {
 .action-item.green { color: #07c160; }
 .action-item.orange { color: #ff976a; }
 .action-item.red { color: #ee0a24; }
+
+.count.blue { color: #1989fa; }
+.count.green { color: #07c160; }
+.count.red { color: #ee0a24; }
+.count.gray { color: #969799; }
+
+/* 局部样式 */
+.dialog-content {
+  padding: 24px 16px;
+}
+
+.dialog-input {
+  background-color: transparent !important;
+  border-radius: 12px;
+  border: 1px solid #ebedf0;
+}
+
+.dialog-content-inner {
+  margin: 20px 0;
+}
+
+.delete-dialog-content {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.warning-icon {
+  margin-bottom: 16px;
+}
+
+.delete-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #323233;
+  margin-bottom: 12px;
+}
+
+.delete-desc {
+  font-size: 14px;
+  color: #969799;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.delete-actions-group {
+  display: flex;
+  gap: 12px;
+}
+
+.delete-actions-group .van-button {
+  flex: 1;
+  height: 44px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cancel-btn {
+  background-color: #f0f7ff !important;
+  color: #1989fa !important;
+  border: none !important;
+}
+</style>
+
+<!-- 全局样式：系统渐变风格 -->
+<style>
+.glass-dialog.van-dialog {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%) !important;
+  backdrop-filter: blur(15px) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden;
+}
+
+.glass-sheet.van-action-sheet {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%) !important;
+  backdrop-filter: blur(15px) !important;
+  border-radius: 24px 24px 0 0 !important;
+}
 </style>

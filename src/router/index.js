@@ -6,12 +6,24 @@ import Bind from '../views/Bind.vue';
 import Energy from '../views/Energy.vue';
 import Profile from '../views/Profile.vue';
 import Login from '../views/Login.vue';
+import DeviceDetail from '../views/DeviceDetail.vue';
+import ReplaceDevice from '../views/ReplaceDevice.vue';
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
+  },
+  {
+    path: '/device-detail',
+    name: 'DeviceDetail',
+    component: DeviceDetail,
+  },
+  {
+    path: '/replace-device',
+    name: 'ReplaceDevice',
+    component: ReplaceDevice,
   },
   {
     path: '/',

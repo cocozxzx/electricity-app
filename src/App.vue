@@ -18,4 +18,14 @@ body {
 #app {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* 隐藏全局滚动条，但保持可滚动性 */
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari and Opera */
+}
 </style>
