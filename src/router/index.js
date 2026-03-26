@@ -4,6 +4,7 @@ import Home from '../views/Home.vue';
 import Operation from '../views/Operation.vue';
 import Bind from '../views/Bind.vue';
 import Energy from '../views/Energy.vue';
+import EnergyDetail from '../views/EnergyDetail.vue';
 import Profile from '../views/Profile.vue';
 import Login from '../views/Login.vue';
 import DeviceDetail from '../views/DeviceDetail.vue';
@@ -39,6 +40,11 @@ const routes = [
     path: '/bind',
     name: 'Bind',
     component: Bind,
+  },
+  {
+    path: '/energy-detail',
+    name: 'EnergyDetail',
+    component: EnergyDetail,
   },
   {
     path: '/',
