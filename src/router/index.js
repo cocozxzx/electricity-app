@@ -12,6 +12,10 @@ import AlarmRecord from '../views/AlarmRecord.vue';
 
 const routes = [
   {
+    path: '/',
+    redirect: '/login'
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login,
