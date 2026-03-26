@@ -13,7 +13,7 @@
           </template>
         </van-popover>
 
-        <div class="notice-icon">
+        <div class="notice-icon" @click="goToAlarmRecord">
           <van-icon name="bell" size="24" />
           <div class="badge">3</div>
         </div>
@@ -28,6 +28,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const showProjectPopover = ref(false);
 const projects = [
@@ -39,6 +42,10 @@ const currentProject = ref(projects[0]);
 
 const onSelectProject = (action) => {
   currentProject.value = action;
+};
+
+const goToAlarmRecord = () => {
+  router.push('/alarm-record');
 };
 </script>
 

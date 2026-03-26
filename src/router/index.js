@@ -8,6 +8,7 @@ import Profile from '../views/Profile.vue';
 import Login from '../views/Login.vue';
 import DeviceDetail from '../views/DeviceDetail.vue';
 import ReplaceDevice from '../views/ReplaceDevice.vue';
+import AlarmRecord from '../views/AlarmRecord.vue';
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/replace-device',
     name: 'ReplaceDevice',
     component: ReplaceDevice,
+  },
+  {
+    path: '/alarm-record',
+    name: 'AlarmRecord',
+    component: AlarmRecord,
   },
   {
     path: '/bind',

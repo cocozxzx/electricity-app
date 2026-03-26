@@ -358,7 +358,7 @@ const handleLogout = () => {
 }
 
 .menu-section {
-  margin-top: -30px;
+  margin-top: 20px;
   padding: 0 16px;
 }
 

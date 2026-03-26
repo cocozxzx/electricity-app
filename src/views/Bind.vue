@@ -1,122 +1,130 @@
 <template>
   <div class="bind-page">
-    <van-nav-bar title="设备批量绑定" left-arrow @click-left="onClickLeft" :border="false" fixed placeholder />
-
-    <div class="content">
-      <!-- 项目选择 -->
-      <div class="project-selector-card" @click="showPicker = true">
-        <div class="p-icon">
-          <van-icon name="apps-o" size="24" color="#1989fa" />
-        </div>
-        <div class="p-details">
-          <div class="p-label">目标项目</div>
-          <div class="p-value-row">
-            <span class="p-value">{{ selectedProject }}</span>
-            <van-icon name="arrow-down" color="#323233" />
-          </div>
-        </div>
-      </div>
-
-      <!-- 选择器 -->
-      <van-popup v-model:show="showPicker" position="bottom" round>
-        <van-picker
-          :columns="projects"
-          @confirm="onConfirm"
-          @cancel="showPicker = false"
-          show-toolbar
-        />
-      </van-popup>
-
-      <!-- 提示信息 -->
-      <div class="hint-message">
-        <span class="hint-text">提示：请先扫码网关（仅 1 个），再扫码子设备（可多个）。</span>
-      </div>
-
-      <!-- 设备列表区域 -->
-      <div v-if="scannedDevices.length > 0" class="scanned-section">
-        <div class="scanned-header">
-          <span class="scanned-title">已扫描设备</span>
-          <span class="scanned-count">{{ scannedDevices.length }} 个设备</span>
-        </div>
-        
-        <transition-group name="list" tag="div" class="device-cards-container">
-          <div v-for="device in sortedDevices" :key="device.id" class="device-bind-card" :class="device.type">
-            <div class="card-top-bar" :class="device.type"></div>
-            <div class="card-header">
-              <div class="device-tag" :class="device.type">
-                <van-icon :name="device.type === 'gateway' ? 'signal' : 'cluster-o'" />
-                <span>{{ device.type === 'gateway' ? '智能网关' : '子设备' }}</span>
-              </div>
-              <div class="delete-icon-wrapper" @click="removeDevice(device.id)">
-                <van-icon name="delete-o" class="delete-icon" />
-              </div>
-            </div>
-
-            <div class="device-main-info">
-              <div class="device-icon-wrapper" :class="device.type">
-                <van-icon :name="device.type === 'gateway' ? 'wap-home-o' : 'flash-outline'" size="32" />
-              </div>
-              <div class="device-text-info">
-                <div class="device-name">{{ device.type === 'gateway' ? '智能网关控制器' : '单相智能断路器' }}</div>
-                <div class="device-id-tag">{{ device.type === 'gateway' ? '网关' : '子设' }}-{{ device.id }}</div>
-              </div>
-            </div>
-
-            <div class="input-group">
-              <div class="input-label">备注名称</div>
-              <van-field v-model="device.remark" placeholder="请输入备注名称" class="custom-field">
-                <template #left-icon>
-                  <van-icon name="label-o" />
-                </template>
-              </van-field>
-            </div>
-
-            <div class="input-group">
-              <div class="input-label">安装位置</div>
-              <van-field v-model="device.location" placeholder="请输入安装位置" class="custom-field">
-                <template #left-icon>
-                  <van-icon name="location-o" />
-                </template>
-              </van-field>
-            </div>
-
-            <div class="input-group">
-              <div class="input-label">上传图片</div>
-              <van-uploader v-model="device.images" multiple :max-count="1" class="custom-uploader" />
-            </div>
-          </div>
-        </transition-group>
-      </div>
-
-      <!-- 空状态 -->
-      <div v-else class="empty-container">
-        <div class="dashed-circle">
-          <van-icon name="plus" size="36" color="#dcdee0" />
-        </div>
-        <div class="empty-title">列表为空</div>
-        <div class="empty-subtitle">点击下方扫码添加设备</div>
-      </div>
+    <!-- 装饰性背景 -->
+    <div class="home-background">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
     </div>
 
-    <!-- 底部操作 -->
-    <div class="bottom-bar">
-      <van-button class="btn-scan" @click="onScan" :loading="scanning">
-        <template #icon>
-          <van-icon name="photograph" />
-        </template>
-        扫码添加
-      </van-button>
-      <van-button 
-        class="btn-submit" 
-        :class="{ 'btn-animate': scannedDevices.length > 0 && !processing.show }"
-        :disabled="scannedDevices.length === 0"
-        @click="onSubmit"
-      >
-        <template #icon>
-          <van-icon name="notes-o" />
-        </template>
-        提交绑定（ {{ scannedDevices.length }} ）
-      </van-button>
+    <div class="content-wrapper">
+      <van-nav-bar title="设备批量绑定" left-arrow @click-left="onClickLeft" :border="false" fixed placeholder class="custom-nav-bar" />
+
+      <div class="content">
+        <!-- 项目选择 -->
+        <div class="project-selector-card glass-card" @click="showPicker = true">
+          <div class="p-icon">
+            <van-icon name="apps-o" size="24" color="#1989fa" />
+          </div>
+          <div class="p-details">
+            <div class="p-label">目标项目</div>
+            <div class="p-value-row">
+              <span class="p-value">{{ selectedProject }}</span>
+              <van-icon name="arrow-down" color="#323233" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 选择器 -->
+        <van-popup v-model:show="showPicker" position="bottom" round>
+          <van-picker
+            :columns="projects"
+            @confirm="onConfirm"
+            @cancel="showPicker = false"
+            show-toolbar
+          />
+        </van-popup>
+
+        <!-- 提示信息 -->
+        <div class="hint-message">
+          <span class="hint-text">提示：请先扫码网关（仅 1 个），再扫码子设备（可多个）。</span>
+        </div>
+
+        <!-- 设备列表区域 -->
+        <div v-if="scannedDevices.length > 0" class="scanned-section">
+          <div class="scanned-header">
+            <span class="scanned-title">已扫描设备</span>
+            <span class="scanned-count">{{ scannedDevices.length }} 个设备</span>
+          </div>
+          
+          <transition-group name="list" tag="div" class="device-cards-container">
+            <div v-for="device in sortedDevices" :key="device.id" class="device-bind-card glass-card" :class="device.type">
+              <div class="card-top-bar" :class="device.type"></div>
+              <div class="card-header">
+                <div class="device-tag" :class="device.type">
+                  <van-icon :name="device.type === 'gateway' ? 'signal' : 'cluster-o'" />
+                  <span>{{ device.type === 'gateway' ? '智能网关' : '子设备' }}</span>
+                </div>
+                <div class="delete-icon-wrapper" @click="removeDevice(device.id)">
+                  <van-icon name="delete-o" class="delete-icon" />
+                </div>
+              </div>
+
+              <div class="device-main-info">
+                <div class="device-icon-wrapper" :class="device.type">
+                  <van-icon :name="device.type === 'gateway' ? 'wap-home-o' : 'flash-outline'" size="32" />
+                </div>
+                <div class="device-text-info">
+                  <div class="device-name">{{ device.type === 'gateway' ? '智能网关控制器' : '单相智能断路器' }}</div>
+                  <div class="device-id-tag">{{ device.type === 'gateway' ? '网关' : '子设' }}-{{ device.id }}</div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <div class="input-label">备注名称</div>
+                <van-field v-model="device.remark" placeholder="请输入备注名称" class="custom-field">
+                  <template #left-icon>
+                    <van-icon name="label-o" />
+                  </template>
+                </van-field>
+              </div>
+
+              <div class="input-group">
+                <div class="input-label">安装位置</div>
+                <van-field v-model="device.location" placeholder="请输入安装位置" class="custom-field">
+                  <template #left-icon>
+                    <van-icon name="location-o" />
+                  </template>
+                </van-field>
+              </div>
+
+              <div class="input-group">
+                <div class="input-label">上传图片</div>
+                <van-uploader v-model="device.images" multiple :max-count="1" class="custom-uploader" />
+              </div>
+            </div>
+          </transition-group>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="empty-container">
+          <div class="dashed-circle">
+            <van-icon name="plus" size="36" color="#dcdee0" />
+          </div>
+          <div class="empty-title">列表为空</div>
+          <div class="empty-subtitle">点击下方扫码添加设备</div>
+        </div>
+      </div>
+
+      <!-- 底部操作 -->
+      <div class="bottom-bar">
+        <van-button class="btn-scan" @click="onScan" :loading="scanning">
+          <template #icon>
+            <van-icon name="photograph" />
+          </template>
+          扫码添加
+        </van-button>
+        <van-button 
+          class="btn-submit" 
+          :class="{ 'btn-animate': scannedDevices.length > 0 && !processing.show }"
+          :disabled="scannedDevices.length === 0"
+          @click="onSubmit"
+        >
+          <template #icon>
+            <van-icon name="notes-o" />
+          </template>
+          提交绑定（ {{ scannedDevices.length }} ）
+        </van-button>
+      </div>
     </div>
 
     <!-- 过程动画遮罩 -->
@@ -257,14 +265,55 @@ const onSubmit = () => {
 
 <style scoped>
 .bind-page {
+  position: relative;
   height: 100vh;
-  background-color: #f7f8fa;
+  background-color: #f0f2f5;
+  overflow: hidden;
+}
+
+.home-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(25, 137, 250, 0.15);
+  top: -50px;
+  right: -50px;
+}
+
+.circle-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(0, 210, 255, 0.1);
+  top: 300px;
+  left: -50px;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-:deep(.van-nav-bar) {
-  background-color: #ffffff;
+.custom-nav-bar {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(10px);
 }
 
 :deep(.van-nav-bar__title) {
@@ -285,13 +334,18 @@ const onSubmit = () => {
   overflow-y: auto;
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+
 .project-selector-card {
-  background: #ffffff;
   border-radius: 16px;
   padding: 16px;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
   margin-bottom: 16px;
   flex-shrink: 0;
 }
@@ -330,7 +384,7 @@ const onSubmit = () => {
 }
 
 .hint-message {
-  background-color: #f0f7ff;
+  background-color: rgba(240, 247, 255, 0.8);
   border: 1px solid #d1e9ff;
   border-radius: 8px;
   padding: 10px 16px;
@@ -376,11 +430,9 @@ const onSubmit = () => {
 }
 
 .device-bind-card {
-  background: #ffffff;
   border-radius: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
   padding: 20px;
 }
 
@@ -458,7 +510,7 @@ const onSubmit = () => {
 
 .device-id-tag {
   display: inline-block;
-  background: #f2f3f5;
+  background: rgba(242, 243, 245, 0.6);
   color: #969799;
   padding: 2px 8px;
   border-radius: 4px;
@@ -478,9 +530,9 @@ const onSubmit = () => {
 
 .custom-field {
   padding: 10px 12px;
-  background: #f7f8fa;
+  background: rgba(247, 248, 250, 0.6);
   border-radius: 12px;
-  border: 1px solid #ebedf0;
+  border: 1px solid rgba(235, 237, 240, 0.8);
 }
 
 :deep(.van-field__left-icon) {
@@ -492,7 +544,7 @@ const onSubmit = () => {
 }
 
 :deep(.van-uploader__upload) {
-  background: #f7f8fa;
+  background: rgba(247, 248, 250, 0.6);
   border-radius: 12px;
   border: 1px dashed #dcdee0;
   margin: 0;
@@ -532,7 +584,8 @@ const onSubmit = () => {
 }
 
 .bottom-bar {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
   padding: 16px 16px 32px;
   display: flex;
   gap: 12px;
