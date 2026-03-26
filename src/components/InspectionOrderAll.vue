@@ -1,8 +1,13 @@
 <template>
   <div class="inspection-order-all">
+    <!-- 装饰性背景 (与Home页保持一致) -->
+    <div class="home-background">
+      <div class="circle circle-1"></div>
+      <div class="circle circle-2"></div>
+    </div>
+
     <van-nav-bar
-      title="全部巡检任务"
-      left-text="返回"
+      title="巡检任务"
       left-arrow
       @click-left="$emit('close')"
       fixed
@@ -11,7 +16,7 @@
     />
 
     <!-- 状态切换 Tabs -->
-    <van-tabs v-model:active="activeStatus" sticky offset-top="46px" color="#1989fa" line-width="30px">
+    <van-tabs v-model:active="activeStatus" sticky offset-top="46px" color="#1989fa" line-width="30px" class="custom-tabs-nav">
       <van-tab title="进行中" name="进行中"></van-tab>
       <van-tab title="已完成" name="已完成"></van-tab>
     </van-tabs>
@@ -53,7 +58,6 @@
         </div>
 
         <div class="card-footer-actions">
-          <!-- 所有状态现在都有详情按钮 -->
           <van-button 
             type="default"
             size="small"
@@ -113,12 +117,51 @@ const displayOrders = computed(() => {
   overflow-y: auto;
 }
 
+.home-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+}
+
+.circle-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(25, 137, 250, 0.15);
+  top: -50px;
+  right: -50px;
+}
+
+.circle-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(0, 210, 255, 0.1);
+  top: 300px;
+  left: -50px;
+}
+
 .custom-nav-bar {
-  --van-nav-bar-background: #fff;
-  border-bottom: 1px solid #f2f3f5;
+  --van-nav-bar-background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.custom-tabs-nav {
+  --van-tabs-nav-background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
 }
 
 .list-container {
+  position: relative;
+  z-index: 1;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -126,7 +169,9 @@ const displayOrders = computed(() => {
 }
 
 .glass-card {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   padding: 16px;
@@ -229,6 +274,8 @@ const displayOrders = computed(() => {
 }
 
 .empty-state {
+  position: relative;
+  z-index: 1;
   padding: 60px 0;
   text-align: center;
   color: #969799;
