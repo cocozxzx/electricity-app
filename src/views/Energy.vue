@@ -16,13 +16,6 @@
           <div class="glass-card summary-card">
             <!-- 头部高亮数据区 -->
             <div class="header-highlight">
-              <div class="highlight-item primary">
-                <div class="hl-label">当前实时能耗</div>
-                <div class="hl-value">
-                  <span class="number">{{ energyStats.realtime }}</span>
-                  <span class="unit">kW</span>
-                </div>
-              </div>
               <div class="v-divider"></div>
               <div class="highlight-item secondary">
                 <div class="hl-label">累计总用电量</div>
