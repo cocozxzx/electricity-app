@@ -67,7 +67,19 @@
       </div>
 
       <!-- 实时监测数据 -->
-      <div class="section-title">实时监测数据</div>
+      <div class="section-title with-refresh">
+        <span>实时监测数据</span>
+        <van-button 
+          icon="replay" 
+          size="mini" 
+          round 
+          plain 
+          type="primary" 
+          @click="handleRefresh"
+        >
+          刷新
+        </van-button>
+      </div>
       <div class="data-grid">
         <div v-for="(item, index) in monitoringData" :key="index" class="data-card glass-card">
           <div class="data-label">{{ item.label }}</div>
@@ -224,6 +236,10 @@ const handleCommand = () => {
   }, 800);
 };
 
+const handleRefresh = () => {
+  showToast('数据已刷新');
+};
+
 const monitoringData = [
   { label: '剩余电流(漏电)', value: '0.02', unit: 'mA', threshold: '≤ 30 mA' },
   { label: '电网频率', value: '50.01', unit: 'Hz', threshold: '49.5-50.5 Hz' },
@@ -331,6 +347,13 @@ const phaseData = {
   width: 4px;
   background-color: #1989fa;
   border-radius: 2px;
+}
+
+.section-title.with-refresh {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 16px;
 }
 
 .glass-card {
