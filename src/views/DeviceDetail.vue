@@ -69,16 +69,10 @@
       <!-- 实时监测数据 -->
       <div class="section-title with-refresh">
         <span>实时监测数据</span>
-        <van-button 
-          icon="replay" 
-          size="mini" 
-          round 
-          plain 
-          type="primary" 
-          @click="handleRefresh"
-        >
-          刷新
-        </van-button>
+        <div class="realtime-switch-wrapper">
+          <span class="switch-label">实时更新</span>
+          <van-switch v-model="isRealTime" size="18px" />
+        </div>
       </div>
       <div class="data-grid">
         <div v-for="(item, index) in monitoringData" :key="index" class="data-card glass-card">
@@ -186,6 +180,7 @@ import { showToast, showSuccessToast, showFailToast } from 'vant';
 const router = useRouter();
 const isOn = ref(false);
 const currentPhase = ref('A相');
+const isRealTime = ref(false);
 
 const onClickLeft = () => router.back();
 
@@ -354,6 +349,18 @@ const phaseData = {
   justify-content: space-between;
   align-items: center;
   padding-right: 16px;
+}
+
+.realtime-switch-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.switch-label {
+  font-size: 13px;
+  color: #646566;
+  margin-right: 8px;
+  font-weight: normal;
 }
 
 .glass-card {
