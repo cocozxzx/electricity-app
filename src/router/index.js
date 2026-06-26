@@ -8,6 +8,7 @@ import EnergyDetail from '../views/EnergyDetail.vue';
 import Profile from '../views/Profile.vue';
 import Login from '../views/Login.vue';
 import DeviceDetail from '../views/DeviceDetail.vue';
+import GatewayDetail from '../views/GatewayDetail.vue';
 import ReplaceDevice from '../views/ReplaceDevice.vue';
 import AlarmRecord from '../views/AlarmRecord.vue';
 
@@ -25,6 +26,11 @@ const routes = [
     path: '/device-detail',
     name: 'DeviceDetail',
     component: DeviceDetail,
+  },
+  {
+    path: '/gateway-detail',
+    name: 'GatewayDetail',
+    component: GatewayDetail,
   },
   {
     path: '/replace-device',

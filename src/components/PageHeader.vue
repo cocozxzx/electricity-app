@@ -19,10 +19,10 @@
         </div>
       </div>
     </div>
-    <div class="user-info">
+    <!-- <div class="user-info">
       <p class="address">浙江杭州市余杭区xxxx</p>
       <p class="user-detail">admin 18888888888</p>
-    </div>
+    </div> -->
   </div>
 </template>
 
