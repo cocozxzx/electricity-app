@@ -16,7 +16,11 @@
         placeholder
         :border="false"
         class="custom-nav-bar"
-      />
+      >
+        <template #right>
+          <span class="read-all-btn" @click="markAllRead">全部已读</span>
+        </template>
+      </van-nav-bar>
 
       <!-- 2. 固定顶部：查询区域 (一个Div包含所有条件) -->
       <div class="query-section">
@@ -106,9 +110,11 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { showConfirmDialog } from 'vant';
 
 const router = useRouter();
+const route = useRoute();
 
 const searchQuery = reactive({
   deviceName: '',
@@ -182,6 +188,28 @@ const filteredAlarms = computed(() => {
 });
 
 const onClickLeft = () => router.back();
+
+// 全部已读：二次确认后，记录该设备已读，返回首页隐藏告警角标
+const markAllRead = () => {
+  showConfirmDialog({
+    title: '提示',
+    message: '确认将该设备的告警全部标记为已读吗？',
+  })
+    .then(() => {
+      const deviceId = route.query.deviceId;
+      if (deviceId) {
+        const readIds = JSON.parse(localStorage.getItem('readAlarmDeviceIds') || '[]');
+        if (!readIds.includes(deviceId)) {
+          readIds.push(deviceId);
+          localStorage.setItem('readAlarmDeviceIds', JSON.stringify(readIds));
+        }
+      }
+      // 标记已读后停留在当前页面，返回首页时告警角标自动隐藏
+    })
+    .catch(() => {
+      // 取消，停留在当前页面
+    });
+};
 </script>
 
 <style scoped>
@@ -226,6 +254,13 @@ const onClickLeft = () => router.back();
 }
 
 :deep(.van-nav-bar__title) { font-weight: bold; }
+
+.read-all-btn {
+  font-size: 14px;
+  color: #1989fa;
+  font-weight: 500;
+  cursor: pointer;
+}
 
 .query-section {
   padding: 8px 16px 12px;

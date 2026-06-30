@@ -267,6 +267,59 @@
           </div>
         </div>
       </template>
+
+      <!-- 冻结数据 -->
+      <template v-else-if="activeDetailTab === 'freeze'">
+        <!-- 查询条件 -->
+        <div class="freeze-query glass-card">
+          <div class="freeze-query-row" @click="showFreezeTypePicker = true">
+            <span class="fq-label">冻结类型</span>
+            <span class="fq-value">
+              {{ freezeTypeLabel }}
+              <van-icon name="arrow-down" />
+            </span>
+          </div>
+          <div class="freeze-query-row">
+            <span class="fq-label">指定次数</span>
+            <van-stepper v-model="freezeCount" :min="1" :max="9999" integer />
+          </div>
+          <van-button class="freeze-query-btn" type="primary" round block @click="onFreezeQuery">查询</van-button>
+        </div>
+
+        <!-- 冻结数据结果（多条） -->
+        <div v-if="freezeResults.length" class="freeze-result-wrap">
+          <div class="freeze-result-count">共 {{ freezeResults.length }} 条记录</div>
+          <van-collapse v-model="activeFreezeNames" class="freeze-collapse glass-card">
+            <van-collapse-item
+              v-for="(record, index) in freezeResults"
+              :key="index"
+              :name="index"
+            >
+              <template #title>
+                <div class="freeze-collapse-title">
+                  <span class="fct-index">第 {{ index + 1 }} 次</span>
+                  <span class="fct-time">{{ record.time }}</span>
+                </div>
+              </template>
+              <div class="freeze-result">
+                <div v-for="(item, i) in record.fields" :key="i" class="freeze-row">
+                  <span class="fr-label">{{ item.label }}</span>
+                  <span class="fr-value">
+                    {{ item.value }}
+                    <span v-if="item.unit" class="fr-unit">{{ item.unit }}</span>
+                  </span>
+                </div>
+              </div>
+            </van-collapse-item>
+          </van-collapse>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="event-empty glass-card">
+          <van-icon name="search" size="32" color="#c8c9cc" />
+          <p>暂无冻结数据，请点击查询</p>
+        </div>
+      </template>
     </div>
 
     <!-- 安全确认弹窗 -->
@@ -316,6 +369,16 @@
         </div>
       </div>
     </van-dialog>
+
+    <!-- 冻结类型选择 -->
+    <van-popup v-model:show="showFreezeTypePicker" position="bottom" round>
+      <van-picker
+        :columns="freezeTypeOptions"
+        :model-value="[freezeType]"
+        @confirm="onFreezeTypeConfirm"
+        @cancel="showFreezeTypePicker = false"
+      />
+    </van-popup>
 
     <!-- 导航软件选择 -->
     <van-action-sheet
@@ -587,6 +650,7 @@ const detailTabs = [
   { key: 'param', label: '参数设置' },
   { key: 'desc', label: '设备描述' },
   { key: 'history', label: '历史数据' },
+  { key: 'freeze', label: '冻结数据' },
 ];
 const activeDetailTab = ref('realtime');
 
@@ -661,6 +725,86 @@ const eventRecords = {
 };
 
 const currentEvents = computed(() => eventRecords[activeEventType.value] || []);
+
+/* ============ 冻结数据 ============ */
+const freezeTypeOptions = [
+  { text: '瞬时冻结', value: 'instant' },
+  { text: '分钟冻结', value: 'minute' },
+  { text: '日冻结', value: 'day' },
+  { text: '月冻结', value: 'month' },
+];
+const freezeType = ref('day');
+const showFreezeTypePicker = ref(false);
+const freezeCount = ref(1);
+
+const freezeTypeLabel = computed(
+  () => freezeTypeOptions.find((o) => o.value === freezeType.value)?.text || ''
+);
+
+const onFreezeTypeConfirm = ({ selectedValues }) => {
+  freezeType.value = selectedValues[0];
+  showFreezeTypePicker.value = false;
+};
+
+// 查询结果（每次查询生成 freezeCount 条记录）
+const freezeResults = ref([]);
+const activeFreezeNames = ref([]);
+
+// 两位补零
+const pad = (n) => String(n).padStart(2, '0');
+const fmt = (d) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+  `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+// 根据冻结类型与序号计算冻结时间（序号越大时间越早）
+const freezeTimeAt = (index) => {
+  const d = new Date(2026, 5, 29, 0, 0, 0);
+  switch (freezeType.value) {
+    case 'instant': d.setSeconds(d.getSeconds() - index * 5); break;
+    case 'minute': d.setMinutes(d.getMinutes() - index * 15); break;
+    case 'day': d.setDate(d.getDate() - index); break;
+    case 'month': d.setMonth(d.getMonth() - index); break;
+  }
+  return fmt(d);
+};
+
+// 构建单条冻结记录字段（瞬时/分钟/日/月冻结均使用日冻结字段）
+const buildFreezeFields = (index, time) => [
+  { label: '冻结类型', value: freezeTypeLabel.value, unit: '' },
+  { label: '冻结时间', value: time, unit: '' },
+  { label: '正向有功总电能', value: (12345.67 - index * 23.45).toFixed(2), unit: 'kWh' },
+  { label: '反向有功总电能', value: '0.00', unit: 'kWh' },
+  { label: '组合无功1电能', value: (2345.12 - index * 5.6).toFixed(2), unit: 'kvarh' },
+  { label: '组合无功2电能', value: (1234.56 - index * 3.2).toFixed(2), unit: 'kvarh' },
+  { label: '第一象限无功电能', value: (1200.34 - index * 2.8).toFixed(2), unit: 'kvarh' },
+  { label: '第二象限无功电能', value: '0.00', unit: 'kvarh' },
+  { label: '第三象限无功电能', value: '0.00', unit: 'kvarh' },
+  { label: '第四象限无功电能', value: (1144.78 - index * 2.4).toFixed(2), unit: 'kvarh' },
+  { label: '正向有功最大需量', value: (15.23 - index * 0.12).toFixed(2), unit: 'kW' },
+  { label: '正向有功最大需量发生时间', value: time, unit: '' },
+  { label: '反向有功最大需量', value: '0.00', unit: 'kW' },
+  { label: '反向有功最大需量发生时间', value: '--', unit: '' },
+  { label: '总有功功率', value: (12.50 - index * 0.1).toFixed(2), unit: 'kW' },
+  { label: 'A相有功功率', value: (4.20 - index * 0.03).toFixed(2), unit: 'kW' },
+  { label: 'B相有功功率', value: (4.10 - index * 0.03).toFixed(2), unit: 'kW' },
+  { label: 'C相有功功率', value: (4.20 - index * 0.04).toFixed(2), unit: 'kW' },
+  { label: '总无功功率', value: (1.20 - index * 0.02).toFixed(2), unit: 'kvar' },
+  { label: 'A相无功功率', value: '0.40', unit: 'kvar' },
+  { label: 'B相无功功率', value: '0.40', unit: 'kvar' },
+  { label: 'C相无功功率', value: '0.40', unit: 'kvar' },
+];
+
+const onFreezeQuery = () => {
+  const count = freezeCount.value;
+  const list = [];
+  for (let i = 0; i < count; i++) {
+    const time = freezeTimeAt(i);
+    list.push({ time, fields: buildFreezeFields(i, time) });
+  }
+  freezeResults.value = list;
+  activeFreezeNames.value = count ? [0] : []; // 默认展开第一条
+  showSuccessToast(`查询到 ${count} 条${freezeTypeLabel.value}数据`);
+};
 </script>
 
 <style scoped>
@@ -1404,6 +1548,118 @@ const currentEvents = computed(() => eventRecords[activeEventType.value] || []);
   padding: 40px 0;
   color: #969799;
   font-size: 14px;
+}
+
+/* ============ 冻结数据 ============ */
+.freeze-query {
+  margin-bottom: 14px;
+}
+
+.freeze-query-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(242, 243, 245, 0.9);
+}
+
+.fq-label {
+  font-size: 14px;
+  color: #646566;
+}
+
+.fq-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1989fa;
+  cursor: pointer;
+}
+
+.freeze-query-btn {
+  height: 42px;
+  margin-top: 14px;
+  font-weight: 500;
+}
+
+.freeze-result-count {
+  font-size: 12px;
+  color: #969799;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.freeze-collapse {
+  padding: 0 16px;
+  overflow: hidden;
+}
+
+.freeze-collapse :deep(.van-collapse-item__content) {
+  background: transparent;
+  padding: 0;
+}
+
+.freeze-collapse :deep(.van-cell) {
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.freeze-collapse-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.freeze-result {
+  padding-bottom: 4px;
+}
+
+.fct-index {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1989fa;
+}
+
+.fct-time {
+  font-size: 12px;
+  color: #969799;
+}
+
+.freeze-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(242, 243, 245, 0.9);
+}
+
+.freeze-row:last-child {
+  border-bottom: none;
+}
+
+.fr-label {
+  font-size: 13px;
+  color: #646566;
+  flex-shrink: 0;
+}
+
+.fr-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: right;
+  margin-left: 12px;
+}
+
+.fr-unit {
+  font-size: 11px;
+  font-weight: normal;
+  color: #969799;
+  margin-left: 3px;
 }
 </style>
 

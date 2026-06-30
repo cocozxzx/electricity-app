@@ -63,7 +63,7 @@
               <span class="product-name">（{{ device.productName }}）</span>
             </div>
             <div class="header-right">
-              <div v-if="device.alarm" class="alarm-tag">
+              <div v-if="device.alarm" class="alarm-tag" @click.stop="goToAlarm(device)">
                 <van-icon name="warning" />
                 <span>告警</span>
               </div>
@@ -131,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { showImagePreview } from 'vant';
 import PageHeader from '@/components/PageHeader.vue';
@@ -226,6 +226,21 @@ const goToDetail = (device) => {
     router.push({ name: 'DeviceDetail' });
   }
 };
+
+// 点击告警角标，跳转至该设备的报警记录页面
+const goToAlarm = (device) => {
+  router.push({ name: 'AlarmRecord', query: { deviceId: device.id } });
+};
+
+// 进入首页时，将已点击“全部已读”的设备的告警角标隐藏
+onMounted(() => {
+  const readIds = JSON.parse(localStorage.getItem('readAlarmDeviceIds') || '[]');
+  allDevices.value.forEach((device) => {
+    if (readIds.includes(device.id)) {
+      device.alarm = false;
+    }
+  });
+});
 </script>
 
 <style scoped>
@@ -435,6 +450,7 @@ const goToDetail = (device) => {
   padding: 4px 10px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(238, 10, 36, 0.3);
+  cursor: pointer;
 }
 
 .device-body {
